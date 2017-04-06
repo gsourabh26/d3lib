@@ -4,13 +4,15 @@ var querystring = require("querystring");
 var app = express();
 var Q = require("q");
 
+app.use(express.static("public"));
+
 app.use(function (req, res, next) {
     res.setHeader('Access-control-Allow-Headers', '*')
     res.setHeader('Connection', 'keep-alive')
     next();
 })
 
-app.get("/", function (request, response) {
+app.get("/data", function (request, response) {
     return getData().then(function (result) {
         console.log(result);
         response.send(result);

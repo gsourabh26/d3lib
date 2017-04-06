@@ -1,0 +1,85 @@
+<html>
+<head>
+    <title>graph</title>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style >
+        div{
+            display: inline-block;
+        }
+    </style>
+</head> 
+<body>
+    <p id="loading">Loading .... </p>
+    <div id="circle"></div>
+    <div id="histogram"></div>
+<script>
+    fetch("/data").then(function(reponse){
+        return reponse.json();
+    }).then(function(data){
+        var height = 400;
+        var width = 600;
+        var padding = 50;
+
+           d3.select("p")
+            .attr("style", 'display: none');
+        
+        function modifyDataForCircle(arrayData, factor) {
+            return arrayData.map(function(row) {
+                return {
+                    x: row.x / factor,
+                    y: row.y / factor
+               }
+            })
+        }
+        
+        var dataForCircles = modifyDataForCircle(data, 100000);
+        
+        var scale = d3.scale.linear()
+            .domain([0, d3.max(dataForCircles.map(function(r){ return (r.x + r.y)/2; }))])
+            .range([0, width])
+        
+        var scaleY = d3.scale.linear()
+            .domain([0, d3.max(dataForCircles.map(function(r){ return (2 * r.y); }))])
+            .range([height , 0])
+        
+        var axis = d3.svg.axis()
+                    .scale(scale).orient("bottom");
+        
+        var axisY = d3.svg.axis()
+                    .scale(scaleY).orient("left")
+        
+     
+        
+        var canvas = d3.select("#circle")
+            .append("svg")
+            .attr("height", height + padding)
+            .attr("width", width)
+            .append("g")
+            .attr("transform", "translate(30,10)")
+            
+
+        var graph = canvas.selectAll("circle")
+            .data(dataForCircles)
+            .enter()
+                .append("circle")
+                .attr("cx", function(d) {
+                    return scale(d.x);
+                })
+                .attr("cy", function(d) {
+                    return scaleY(d.y);
+                })
+                .attr("r", function(d) { return (d.x + d.y)/2 } )
+                .attr("fill", "blue");
+    
+        canvas.append("g")
+            .call(axisY)    
+    
+        canvas.append("g")
+            .attr("transform", "translate(0,"+ height + ")")
+            .call(axis)
+    }).catch(function(err){
+        console.log("error in fetching data");
+    })
+    </script>
+    
+        </body> </html>
